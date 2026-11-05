@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WEBGIS PHÂN VÙNG NGUY CƠ NGẬP LỤT — QUY NHƠN ĐÔNG</title>
+  <title>WEBGIS PHÂN VÙNG NGUY CƠ NGẬP LỤT — QUY NHƠN ĐÔNG, GIA LAI</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,6 @@
       outline: none;
     }
 
-    /* Giao diện tối giản cho danh sách lớp dữ liệu */
     .layer-option {
       display: flex;
       align-items: center;
@@ -86,6 +85,20 @@
       backdrop-filter: blur(6px);
       box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(15, 23, 42, 0.06);
     }
+
+    /* Style dành riêng cho Chế độ Dân sinh / Dễ nhìn */
+    body.accessible-mode {
+      font-size: 1.15rem;
+    }
+
+    body.accessible-mode .layer-option {
+      font-size: 0.95rem;
+      padding: 0.65rem;
+    }
+
+    body.accessible-mode #point-inspector {
+      width: 22rem;
+    }
   </style>
 </head>
 
@@ -93,11 +106,11 @@
 
   <!-- HEADER -->
   <header
-    class="bg-slate-900 text-white border-b border-slate-800 px-4 h-12 flex items-center justify-between shrink-0 z-30">
+    class="bg-slate-900 text-white border-b border-slate-800 px-4 h-14 flex items-center justify-between shrink-0 z-30">
     <div class="flex items-center gap-2.5 min-w-0">
       <div
-        class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shrink-0">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shrink-0 shadow-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
           stroke-linecap="round" stroke-linejoin="round">
           <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
           <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
@@ -107,22 +120,45 @@
       <div class="truncate">
         <div class="flex items-center gap-2">
           <span
-            class="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">WEBGIS</span>
+            class="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">ARCoES
+            WEBGIS</span>
           <h1 class="text-xs sm:text-sm font-bold tracking-tight text-white uppercase truncate">
-            Phân Vùng Nguy Cơ Ngập Lụt — Quy Nhơn Đông
+            Phân Vùng Nguy Cơ Ngập Lụt — Quy Nhơn Đông, Gia Lai
           </h1>
         </div>
+        <h1 class="text-xs sm:text-sm font-bold tracking-tight text-white uppercase truncate">
+          Phân Vùng Nguy Cơ Ngập Lụt — Quy Nhơn Đông, Gia Lai
+        </h1>
       </div>
     </div>
 
-    <div class="flex items-center gap-2.5 shrink-0">
-      <span id="data-status-badge"
-        class="hidden sm:inline-flex text-[11px] font-mono px-2.5 py-1 rounded-full bg-slate-800 text-emerald-400 border border-slate-700 items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Đang khởi tạo...
-      </span>
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Nút Chế độ Dân sinh / Dễ nhìn -->
+      <button onclick="toggleAccessibleMode()" id="btn-accessible-toggle"
+        class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/40 rounded-lg text-xs font-medium transition flex items-center gap-1.5 cursor-pointer"
+        title="Bật cỡ chữ to và giao diện đơn giản dễ đọc cho mọi người">
+        <span>👁️</span>
+        <span class="hidden md:inline" id="accessible-text">Chế độ Dân sinh</span>
+      </button>
 
+      <!-- Nút Định vị vị trí hiện tại của tôi (GPS) -->
+      <button onclick="locateUserPosition()"
+        class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+        title="Xem nguy cơ ngập tại đúng vị trí của bạn">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="22" y1="12" x2="18" y2="12" />
+          <line x1="6" y1="12" x2="2" y2="12" />
+          <line x1="12" y1="6" x2="12" y2="2" />
+          <line x1="12" y1="22" x2="12" y2="18" />
+        </svg>
+        <span class="hidden sm:inline">Vị trí của tôi</span>
+      </button>
+
+      <!-- Nút Reset Map -->
       <button onclick="resetMapView()"
-        class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+        class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
           stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
@@ -139,27 +175,55 @@
     <!-- SIDEBAR TRÁI: DANH SÁCH LỚP DỮ LIỆU -->
     <aside class="w-64 lg:w-72 bg-white border-r border-slate-200 flex flex-col shrink-0 z-20">
       <div class="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between">
+      <div class="px-3.5 py-2.5 border-b border-slate-100 flex items-center">
         <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Lớp dữ liệu GIS</span>
-        <span class="text-[10px] text-slate-400 font-mono">9 lớp</span>
+        <span id="data-status-badge" class="text-[10px] text-emerald-600 font-mono flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sẵn sàng
+        </span>
       </div>
 
       <div class="flex-1 overflow-y-auto px-3 py-2.5 space-y-3">
         <!-- 1. KẾT QUẢ TỔNG HỢP -->
         <div>
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">
-            Kết quả mô hình
+            Mô hình đánh giá
           </div>
           <label class="layer-option">
             <input type="radio" name="active_layer" id="radio-fri" value="fri" checked onchange="switchLayer('fri')"
               class="w-3.5 h-3.5 accent-blue-600 cursor-pointer shrink-0">
-            <span class="truncate">Nguy cơ tổng hợp (FRI)</span>
+            <span class="truncate">Nguy cơ tổng hợp</span>
           </label>
         </div>
 
-        <!-- 2. YẾU TỐ ẢNH HƯỞNG (8 LỚP - TỐI GIẢN, KHÔNG NỀN NỔI BẬT) -->
+        <!-- 2. CÁC ĐIỂM DÂN SINH & THỰC ĐỊA (MỚI BỔ SUNG) -->
         <div class="pt-2 border-t border-slate-100">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-blue-600 px-2 mb-1 flex items-center gap-1">
+            <span>Dữ liệu thực địa & Ứng phó</span>
+          </div>
+
+          <label class="layer-option">
+            <input type="checkbox" id="check-vet-lu" checked onchange="toggleVetLuLayer(this.checked)"
+              class="w-3.5 h-3.5 accent-red-600 rounded cursor-pointer shrink-0">
+            <span class="flex items-center gap-1.5 truncate">
+              <span class="w-2 h-2 rounded-full bg-red-600"></span>
+              <span>Vết lũ & Ảnh thực tế</span>
+            </span>
+          </label>
+
+          <label class="layer-option">
+            <input type="checkbox" id="check-so-tan" checked onchange="toggleSoTanLayer(this.checked)"
+              class="w-3.5 h-3.5 accent-emerald-600 rounded cursor-pointer shrink-0">
+            <span class="flex items-center gap-1.5 truncate">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Điểm sơ tán an toàn</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- 3. YẾU TỐ ẢNH HƯỞNG (8 LỚP) -->
+        <div class="pt-2 border-t border-slate-100" id="section-factors">
           <div class="flex items-center justify-between px-2 mb-1">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Yếu tố ảnh hưởng</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Yếu tố thành phần</span>
             <span class="text-[10px] text-slate-400">Cấp 1–5</span>
           </div>
           <div id="factor-list-container" class="space-y-0.5">
@@ -168,7 +232,7 @@
         </div>
       </div>
 
-      <!-- 3. TÙY CHỌN HIỂN THỊ & BẢN ĐỒ NỀN -->
+      <!-- 4. BẢN ĐỒ NỀN & ĐỘ MỜ -->
       <div class="p-3 border-t border-slate-200 bg-slate-50/70 space-y-2.5 shrink-0">
         <div>
           <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bản đồ nền</div>
@@ -190,7 +254,7 @@
 
         <div>
           <div class="flex justify-between items-center mb-1 text-[11px] text-slate-600">
-            <span class="font-medium">Độ mờ lớp dữ liệu</span>
+            <span class="font-medium">Độ trong suốt</span>
             <span id="opacity-label" class="font-mono text-blue-600 font-semibold">85%</span>
           </div>
           <input type="range" min="0.15" max="1" step="0.05" value="0.85" oninput="updateGlobalOpacity(this.value)"
@@ -205,15 +269,16 @@
       <!-- KHUNG BẢN ĐỒ CHÍNH -->
       <main class="flex-1 relative overflow-hidden">
 
-        <!-- Cảnh báo mở trực tiếp bằng file:/// -->
+        <!-- Cảnh báo mở trực tiếp qua file:/// -->
         <div id="file-protocol-warning"
           class="hidden absolute top-14 left-3 right-3 sm:right-auto sm:max-w-lg z-[1000] bg-amber-500 text-white text-xs px-3 py-2 rounded-lg shadow-lg flex items-center justify-between gap-3">
-          <span><strong>Chú ý:</strong> Trình duyệt chặn tải GeoJSON qua <code>file:///</code>. Hãy mở qua Live Server
-            (<code>http://127.0.0.1:5500</code>) hoặc GitHub Pages.</span>
+          <span><strong>Chú ý:</strong> Trình duyệt chặn nạp GeoJSON qua <code>file:///</code>. Mở qua VSCode Live
+            Server
+            hoặc GitHub Pages.</span>
           <button onclick="this.parentElement.remove()" class="text-white/90 hover:text-white font-bold px-1">✕</button>
         </div>
 
-        <!-- Thanh tìm kiếm gọn nhẹ -->
+        <!-- Thanh tìm kiếm địa danh -->
         <div class="absolute top-3 left-3 right-14 sm:right-auto sm:w-80 z-[1000]">
           <div class="glass-float rounded-lg flex items-center px-2.5 py-1">
             <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -221,7 +286,7 @@
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>
-            <input type="text" id="map-search-input" placeholder="Tìm kiếm địa danh tại Quy Nhơn..."
+            <input type="text" id="map-search-input" placeholder="Tìm kiếm xã/phường, tên đường..."
               onkeydown="if(event.key==='Enter') executeSearch(this.value)"
               class="w-full px-2 py-1 text-xs text-slate-800 placeholder-slate-400 focus:outline-none bg-transparent">
             <button onclick="executeSearch(document.getElementById('map-search-input').value)"
@@ -235,25 +300,27 @@
           </div>
         </div>
 
-        <!-- Trạng thái tải lớp dung lượng lớn -->
+        <!-- Trạng thái loading -->
         <div id="map-loading-pill"
           class="hidden absolute top-3 left-1/2 -translate-x-1/2 z-[1000] glass-float px-3 py-1.5 rounded-full text-xs font-medium text-slate-700 flex items-center gap-2">
           <span class="w-3.5 h-3.5 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span>
-          <span id="map-loading-text">Đang tải lớp dữ liệu...</span>
+          <span id="map-loading-text">Đang tải dữ liệu...</span>
         </div>
 
         <!-- Bản đồ Leaflet -->
         <div id="map"></div>
 
-        <!-- Bảng tra cứu điểm khi click -->
+        <!-- Bảng tra cứu điểm khi click (Point Inspector) -->
         <div id="point-inspector"
-          class="hidden absolute top-14 right-3 z-[1000] glass-float p-3 rounded-xl w-64 sm:w-72">
+          class="hidden absolute top-14 right-3 z-[1000] glass-float p-3 rounded-xl w-72 sm:w-80 border border-slate-200">
           <div class="flex items-center justify-between pb-1.5 border-b border-slate-200/80 mb-2">
-            <span class="text-xs font-bold text-slate-800">Thông tin vị trí chọn</span>
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>📍</span> Thông tin vị trí tra cứu
+            </span>
             <button onclick="closeInspector()"
               class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1 cursor-pointer">✕</button>
           </div>
-          <div id="point-inspector-body" class="space-y-1.5 text-xs"></div>
+          <div id="point-inspector-body" class="space-y-2 text-xs"></div>
         </div>
 
       </main>
@@ -268,40 +335,40 @@
             <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wide">Bảng chú giải</span>
             <span id="legend-current-layer"
               class="text-[11px] font-semibold text-blue-700 px-2 py-0.5 bg-blue-50 rounded border border-blue-200 truncate">
-              Nguy cơ tổng hợp (FRI)
+              Nguy cơ tổng hợp
             </span>
           </div>
 
           <div class="grid grid-cols-5 gap-1.5 text-center text-[10px]">
             <div class="p-1 rounded bg-slate-50 border border-slate-100">
-              <div class="w-full h-2.5 rounded-sm bg-[#91cf60] mb-1"></div>
+              <div class="w-full h-2.5 rounded-sm bg-[#267300] mb-1"></div>
               <div class="font-bold text-slate-700 leading-tight">Cấp 1</div>
               <div class="text-slate-500 text-[9px] leading-tight">Rất thấp</div>
             </div>
             <div class="p-1 rounded bg-slate-50 border border-slate-100">
-              <div class="w-full h-2.5 rounded-sm bg-[#d9ef8b] mb-1"></div>
+              <div class="w-full h-2.5 rounded-sm bg-[#8CE000] mb-1"></div>
               <div class="font-bold text-slate-700 leading-tight">Cấp 2</div>
               <div class="text-slate-500 text-[9px] leading-tight">Thấp</div>
             </div>
             <div class="p-1 rounded bg-slate-50 border border-slate-100">
-              <div class="w-full h-2.5 rounded-sm bg-[#fee08b] mb-1"></div>
+              <div class="w-full h-2.5 rounded-sm bg-[#FFFF00] mb-1"></div>
               <div class="font-bold text-slate-700 leading-tight">Cấp 3</div>
               <div class="text-slate-500 text-[9px] leading-tight">Trung bình</div>
             </div>
             <div class="p-1 rounded bg-slate-50 border border-slate-100">
-              <div class="w-full h-2.5 rounded-sm bg-[#fc8d59] mb-1"></div>
+              <div class="w-full h-2.5 rounded-sm bg-[#FFAA00] mb-1"></div>
               <div class="font-bold text-slate-700 leading-tight">Cấp 4</div>
               <div class="text-slate-500 text-[9px] leading-tight">Cao</div>
             </div>
             <div class="p-1 rounded bg-slate-50 border border-slate-100">
-              <div class="w-full h-2.5 rounded-sm bg-[#d73027] mb-1"></div>
+              <div class="w-full h-2.5 rounded-sm bg-[#FF0000] mb-1"></div>
               <div class="font-bold text-slate-700 leading-tight">Cấp 5</div>
               <div class="text-slate-500 text-[9px] leading-tight">Rất cao</div>
             </div>
           </div>
 
           <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span>Khu vực: Quy Nhơn Đông, Bình Định</span>
+            <span>Khu vực: Quy Nhơn Đông, Gia Lai</span>
             <span id="crs-info-label" class="font-mono">WGS84 (EPSG:4326)</span>
           </div>
         </div>
@@ -314,7 +381,7 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between text-[11px] border-b border-slate-100 pb-1 mb-1.5">
-              <span class="font-bold text-slate-700 uppercase tracking-wide">Thống kê nguy cơ (%)</span>
+              <span class="font-bold text-slate-700 uppercase tracking-wide">Thống kê diện tích</span>
               <span id="stat-total-area" class="font-mono text-blue-600 font-semibold text-[11px]">-- km²</span>
             </div>
 
@@ -329,22 +396,33 @@
   </div>
 
   <script>
-    // Danh sách 9 lớp dữ liệu trong thư mục ./data (1 lớp FRI + 8 lớp yếu tố ảnh hưởng)
+    // Danh sách 9 lớp raster chuẩn hóa
     const LAYERS = [
-      { id: 'fri', label: 'Nguy cơ tổng hợp (FRI)', files: ['fri.geojson', 'FRI.geojson', 'Fri.geojson'], isResult: true },
-      { id: 'dem', label: 'Độ cao địa hình (DEM)', files: ['dem.geojson', 'Dem.geojson', 'DEM.geojson'] },
-      { id: 'slope', label: 'Độ dốc địa hình (Slope)', files: ['slope.geojson', 'Slope.geojson'] },
-      { id: 'twi', label: 'Chỉ số ẩm ướt (TWI)', files: ['twi.geojson', 'TWI.geojson', 'Twi.geojson'] },
-      { id: 'spi', label: 'Chỉ số dòng chảy (SPI)', files: ['spi.geojson', 'SPI.geojson', 'Spi.geojson'] },
-      { id: 'rain', label: 'Lượng mưa (Rainfall)', files: ['rain.geojson', 'Rain.geojson'] },
-      { id: 'river', label: 'Khoảng cách đến sông (River)', files: ['river.geojson', 'River.geojson'] },
-      { id: 'road', label: 'Khoảng cách đến đường (Road)', files: ['road.geojson', 'Road.geojson'] },
-      { id: 'landuse', label: 'Sử dụng đất (Landuse)', files: ['landuse.geojson', 'Landuse.geojson'] }
+      { id: 'fri', label: 'Nguy cơ tổng hợp', files: ['fri.geojson', 'FRI.geojson', 'Fri.geojson'], isResult: true },
+      { id: 'dem', label: 'Độ cao địa hình', files: ['dem.geojson', 'Dem.geojson', 'DEM.geojson'] },
+      { id: 'slope', label: 'Độ dốc địa hình', files: ['slope.geojson', 'Slope.geojson'] },
+      { id: 'twi', label: 'Chỉ số ẩm ướt', files: ['twi.geojson', 'TWI.geojson', 'Twi.geojson'] },
+      { id: 'spi', label: 'Chỉ số dòng chảy', files: ['spi.geojson', 'SPI.geojson', 'Spi.geojson'] },
+      { id: 'rain', label: 'Lượng mưa', files: ['rain.geojson', 'Rain.geojson'] },
+      { id: 'river', label: 'Khoảng cách đến sông', files: ['river.geojson', 'River.geojson'] },
+      { id: 'road', label: 'Khoảng cách đến đường', files: ['road.geojson', 'Road.geojson'] },
+      { id: 'landuse', label: 'Sử dụng đất', files: ['landuse.geojson', 'Landuse.geojson'] }
     ];
 
-    const LEVEL_COLORS = ['#91cf60', '#d9ef8b', '#fee08b', '#fc8d59', '#d73027'];
-    const LEVEL_LABELS = ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'];
-    const QUY_NHON_DONG_CENTER = [13.815, 109.255];
+    // Bảng màu 5 cấp chuẩn GIS
+    const LEVEL_COLORS = ['#267300', '#8CE000', '#FFFF00', '#FFAA00', '#FF0000'];
+    const LEVEL_LABELS = ['Rất thấp (An toàn)', 'Thấp', 'Trung bình', 'Cao (Dễ ngập)', 'Rất cao (Ngập sâu)'];
+
+    // Khuyến cáo phòng tránh ngập lụt tương ứng cho từng cấp
+    const ACTION_GUIDES = [
+      "Vùng đất cao ráo, hoàn toàn an toàn khi có bão lũ.",
+      "Ít có nguy cơ ngập úng, theo dõi bản tin thời tiết khi mưa lớn liên tục.",
+      "Khu vực có thể bị đọng nước cục bộ, chú ý kê cao đồ đạc trong nhà.",
+      "Khu vực dễ bị ngập úng mặt đường, chủ động di chuyển xe cộ và thiết bị điện.",
+      "Vùng ngập sâu nguy hiểm! Chuẩn bị phương án di dời người già, trẻ nhỏ và liên hệ trạm cứu hộ."
+    ];
+
+    const QUY_NHON_DONG_CENTER = [13.815, 109.225];
 
     let map;
     let canvasRenderer;
@@ -356,7 +434,12 @@
     let activeAbortController = null;
     let chartInstance = null;
 
-    // Bộ nhớ đệm lưu GeoJSON đã chuẩn hóa tọa độ & thống kê diện tích
+    // Các layer vector bổ sung
+    let vetLuLayer = null;
+    let soTanLayer = null;
+    let userMarker = null;
+    let isAccessible = false;
+
     const layerCache = {};
 
     function initMap() {
@@ -364,7 +447,7 @@
 
       map = L.map('map', {
         center: QUY_NHON_DONG_CENTER,
-        zoom: 12,
+        zoom: 13,
         zoomControl: false,
         preferCanvas: true,
         renderer: canvasRenderer
@@ -382,6 +465,10 @@
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
       );
+
+      // Nạp 2 lớp thực địa cộng đồng
+      loadVetLuLayer();
+      loadSoTanLayer();
     }
 
     function switchBaseMap(type) {
@@ -394,7 +481,6 @@
       }
     }
 
-    // Render danh sách 8 yếu tố ảnh hưởng dạng 1 dòng gọn gàng (ví dụ: "Độ cao địa hình (DEM)")
     function renderFactorList() {
       const container = document.getElementById('factor-list-container');
       const factors = LAYERS.filter(l => !l.isResult);
@@ -409,10 +495,164 @@
       `).join('');
     }
 
-    /**
-     * Chuyển đổi tọa độ phẳng UTM (WGS84 / EPSG:32649, EPSG:32648,...) sang WGS84 [lng, lat]
-     * Xử lý trực tiếp các file xuất từ ArcGIS như fri.geojson và landuse.geojson
-     */
+    /* -------------------- 1. TÍNH NĂNG VẾT LŨ & ẢNH HIỆN TRƯỜNG -------------------- */
+    async function loadVetLuLayer() {
+      try {
+        const res = await fetch('./data/vet_lu.geojson');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        vetLuLayer = L.geoJSON(data, {
+          pointToLayer: (feature, latlng) => {
+            return L.circleMarker(latlng, {
+              radius: 7,
+              fillColor: '#dc2626',
+              color: '#ffffff',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.95
+            });
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties || {};
+            const imgHtml = p.anh_vet_lu
+              ? `<div class="mt-2 rounded overflow-hidden border border-slate-200">
+                   <img src="${p.anh_vet_lu}" alt="Ảnh thực tế" class="w-full h-32 object-cover" onerror="this.src='https://placehold.co/400x250?text=Chua+co+anh+hien+truong'"/>
+                 </div>`
+              : '';
+
+            const popupHtml = `
+              <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px; max-width:260px;">
+                <div class="flex items-center gap-1.5 text-red-600 font-bold text-xs uppercase mb-1">
+                  <span>📸</span> Vết lũ thực địa: ${p.ten_diem || 'Điểm ngập'}
+                </div>
+                <div class="text-[11px] space-y-1 text-slate-700">
+                  <div><b>Độ sâu ngập:</b> <span class="text-red-700 font-bold">${p.do_sau || 'Đang cập nhật'}</span></div>
+                  <div><b>Thời gian:</b> ${p.thoi_gian || 'Mùa lũ lịch sử'}</div>
+                  <div><b>Địa chỉ:</b> ${p.dia_chi || 'Quy Nhơn Đông, Gia Lai'}</div>
+                  ${p.mo_ta ? `<p class="italic text-[10px] text-slate-500 mt-1">${p.mo_ta}</p>` : ''}
+                </div>
+                ${imgHtml}
+              </div>
+            `;
+            layer.bindPopup(popupHtml);
+          }
+        }).addTo(map);
+      } catch (e) {
+        console.log('Chưa có file vet_lu.geojson hoặc file lỗi, hệ thống bỏ qua bước nạp.');
+      }
+    }
+
+    function toggleVetLuLayer(show) {
+      if (!vetLuLayer) return;
+      if (show) map.addLayer(vetLuLayer);
+      else map.removeLayer(vetLuLayer);
+    }
+
+    /* -------------------- 2. TÍNH NĂNG ĐIỂM SƠ TÁN AN TOÀN -------------------- */
+    async function loadSoTanLayer() {
+      try {
+        const res = await fetch('./data/diem_so_tan.geojson');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        soTanLayer = L.geoJSON(data, {
+          pointToLayer: (feature, latlng) => {
+            return L.circleMarker(latlng, {
+              radius: 7,
+              fillColor: '#16a34a',
+              color: '#ffffff',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.95
+            });
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties || {};
+            const popupHtml = `
+              <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:210px;">
+                <div class="flex items-center gap-1.5 text-emerald-700 font-bold text-xs uppercase mb-1">
+                  <span>🛡️</span> Điểm sơ tán an toàn
+                </div>
+                <div class="text-[11px] space-y-1 text-slate-700">
+                  <div class="font-semibold text-slate-900">${p.ten || 'Trường học / Trụ sở'}</div>
+                  <div><b>Địa chỉ:</b> ${p.dia_chi || 'Quy Nhơn Đông, Gia Lai'}</div>
+                  <div><b>Sức chứa:</b> <span class="text-emerald-700 font-bold">${p.suc_chua || 'Khoảng 200 người'}</span></div>
+                  <div><b>Liên hệ:</b> <a href="tel:${p.so_dien_thoai}" class="text-blue-600 font-bold">${p.so_dien_thoai || '114'}</a></div>
+                </div>
+              </div>
+            `;
+            layer.bindPopup(popupHtml);
+          }
+        }).addTo(map);
+      } catch (e) {
+        console.log('Chưa có file diem_so_tan.geojson, hệ thống bỏ qua bước nạp.');
+      }
+    }
+
+    function toggleSoTanLayer(show) {
+      if (!soTanLayer) return;
+      if (show) map.addLayer(soTanLayer);
+      else map.removeLayer(soTanLayer);
+    }
+
+    /* -------------------- 3. ĐỊNH VỊ VỊ TRÍ GPS CỦA NGƯỜI DÙNG -------------------- */
+    function locateUserPosition() {
+      if (!navigator.geolocation) {
+        alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          if (userMarker) map.removeLayer(userMarker);
+
+          userMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+              className: 'custom-user-pin',
+              html: `<div style="background:#2563eb; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.4);"></div>`,
+              iconSize: [16, 16],
+              iconAnchor: [8, 8]
+            })
+          }).addTo(map);
+
+          map.flyTo([lat, lng], 15, { duration: 1 });
+
+          userMarker.bindPopup(`
+            <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:12px;">
+              <p class="font-bold text-blue-600 mb-1">📍 Vị trí hiện tại của bạn</p>
+              <p class="text-slate-600">Bạn có thể nhấp vào khu vực xung quanh để kiểm tra cấp độ nguy cơ ngập lụt chi tiết.</p>
+            </div>
+          `).openPopup();
+        },
+        () => {
+          alert("Không lấy được vị trí GPS. Hãy kiểm tra quyền truy cập vị trí trên trình duyệt của bạn.");
+        },
+        { enableHighAccuracy: true }
+      );
+    }
+
+    /* -------------------- 4. CHẾ ĐỘ DÂN SINH / DỄ NHÌN CHO NGƯỜI LỚN TUỔI -------------------- */
+    function toggleAccessibleMode() {
+      isAccessible = !isAccessible;
+      const body = document.body;
+      const btnText = document.getElementById('accessible-text');
+      const factorSection = document.getElementById('section-factors');
+
+      if (isAccessible) {
+        body.classList.add('accessible-mode');
+        btnText.textContent = "Chế độ Chuyên gia";
+        factorSection.classList.add('hidden'); // Ẩn 8 lớp nhân tố kỹ thuật phức tạp
+      } else {
+        body.classList.remove('accessible-mode');
+        btnText.textContent = "Chế độ Dân sinh";
+        factorSection.classList.remove('hidden');
+      }
+    }
+
+    /* -------------------- BỘ CHUYỂN ĐỔI TỌA ĐỘ VÀ NẠP DỮ LIỆU GIS -------------------- */
     function utmToLngLat(easting, northing, zone = 49, northernHemisphere = true) {
       const a = 6378137.0;
       const f = 1 / 298.257223563;
@@ -423,7 +663,6 @@
 
       const x = easting - 500000.0;
       const y = northernHemisphere ? northing : northing - 10000000.0;
-
       const M = y / k0;
       const mu = M / (a * (1 - eSq / 4 - 3 * eSq * eSq / 64 - 5 * eSq * eSq * eSq / 256));
 
@@ -489,7 +728,6 @@
       }
     }
 
-    // Tự động phát hiện hệ tọa độ (EPSG:32649 / CRS84 / EPSG:3857) và chuẩn hóa sang WGS84
     function normalizeGeoJSON(geojson) {
       if (!geojson || !Array.isArray(geojson.features)) return { geojson, sourceCRS: 'WGS84' };
 
@@ -516,7 +754,6 @@
         converter = webMercatorToLngLat;
         sourceCRS = 'EPSG:3857 → WGS84';
       } else {
-        // Nhận diện múi UTM từ mã EPSG (ví dụ EPSG::32649 -> múi 49B, mặc định múi 49 cho Quy Nhơn - Bình Định)
         let zone = 49;
         let north = true;
         const utmNorthMatch = crsName.match(/326(\d{2})/);
@@ -540,12 +777,10 @@
         }
       }
 
-      // Xóa thuộc tính crs cũ sau khi đã đưa về chuẩn WGS84
       delete geojson.crs;
       return { geojson, sourceCRS };
     }
 
-    // Đọc cấp nguy cơ (1..5) từ thuộc tính feature
     function extractRank(props) {
       if (!props) return 3;
 
@@ -580,7 +815,6 @@
       return 3;
     }
 
-    // Tính diện tích hình học từ tọa độ WGS84 (m²) dùng làm dự phòng nếu thiếu Shape_Area
     function ringAreaSqm(ring) {
       if (!ring || ring.length < 3) return 0;
       const R = 6378137;
@@ -617,7 +851,6 @@
       return 0;
     }
 
-    // Lấy diện tích thực tế (m²) của từng vùng nguy cơ từ Shape_Area của ArcGIS
     function extractFeatureAreaSqm(feature) {
       const props = feature?.properties;
       if (props) {
@@ -626,7 +859,6 @@
           for (const k in props) {
             if (k.toLowerCase() === aKey) {
               const v = parseFloat(props[k]);
-              // Shape_Area từ ArcGIS (m²) luôn lớn hơn 1; nếu tính theo độ vuông (< 1) thì chuyển sang tính hình học
               if (!isNaN(v) && v > 1) return v;
             }
           }
@@ -635,7 +867,6 @@
       return geometryAreaSqm(feature?.geometry);
     }
 
-    // Tính toán thống kê diện tích (m², km², %) cho 5 cấp nguy cơ
     function computeLayerStats(geojson) {
       const areaByRank = [0, 0, 0, 0, 0];
       if (geojson && Array.isArray(geojson.features)) {
@@ -697,7 +928,7 @@
         <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
           <div>
             <div class="text-[10px] text-slate-500">${layerMeta ? layerMeta.label : 'Lớp hiện tại'}</div>
-            <span class="font-bold text-xs px-2 py-0.5 rounded text-white inline-block mt-1"
+            <span class="font-bold text-xs px-2 py-0.5 rounded text-white inline-block mt-1 shadow-sm"
               style="background:${LEVEL_COLORS[rank - 1]}">
               Cấp ${rank} — ${LEVEL_LABELS[rank - 1]}
             </span>
@@ -707,17 +938,19 @@
             <div class="text-[10px] text-slate-500">${areaKm2.toFixed(2)} km²</div>
           </div>
         </div>
+
+        <!-- Khung khuyến cáo dân sinh -->
+        <div class="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-[11px] leading-snug">
+          <b>Khuyến cáo ứng phó:</b> ${ACTION_GUIDES[rank - 1]}
+        </div>
+
         <div class="space-y-1 pt-1 text-[11px]">
           <div class="flex justify-between border-b border-slate-100 py-0.5">
-            <span class="text-slate-400">Mã phân cấp (gridcode):</span>
-            <span class="font-mono font-semibold text-slate-700">${rank}</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-100 py-0.5">
-            <span class="text-slate-400">Diện tích cấp ${rank}:</span>
+            <span class="text-slate-400">Diện tích phân vùng:</span>
             <span class="font-mono font-semibold text-slate-700">${(areaKm2 * 100).toFixed(1)} ha</span>
           </div>
           <div class="flex justify-between py-0.5">
-            <span class="text-slate-400">Tọa độ điểm:</span>
+            <span class="text-slate-400">Tọa độ:</span>
             <span class="font-mono text-slate-700">${latlng.lat.toFixed(4)}°N, ${latlng.lng.toFixed(4)}°E</span>
           </div>
         </div>
@@ -763,12 +996,12 @@
           ? 'bg-rose-400'
           : 'bg-emerald-400';
       const textColor = tone === 'loading'
-        ? 'text-amber-300'
+        ? 'text-amber-500'
         : tone === 'error'
-          ? 'text-rose-300'
-          : 'text-emerald-400';
-      badge.className = `hidden sm:inline-flex text-[11px] font-mono px-2.5 py-1 rounded-full bg-slate-800 ${textColor} border border-slate-700 items-center gap-1.5`;
+          ? 'text-rose-500'
+          : 'text-emerald-600';
       badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${statusText}`;
+      badge.className = `text-[10px] ${textColor} font-mono flex items-center gap-1`;
     }
 
     async function switchLayer(layerId) {
@@ -778,7 +1011,6 @@
       activeLayerId = layerId;
       closeInspector();
 
-      // Hủy yêu cầu tải cũ nếu người dùng chuyển lớp liên tục
       if (activeAbortController) {
         activeAbortController.abort();
         activeAbortController = null;
@@ -787,7 +1019,6 @@
 
       document.getElementById('legend-current-layer').textContent = layerConfig.label;
 
-      // Nếu đã có trong bộ nhớ đệm thì hiển thị tức thì (0ms)
       if (layerCache[layerId]) {
         setLoadingState(false);
         applyLayerToMap(layerCache[layerId]);
@@ -806,7 +1037,6 @@
         const { rawData, fileName } = await fetchLayerGeoJSON(layerConfig.files, controller.signal);
         if (loadSeq !== currentLoadSeq) return;
 
-        // Nhường 1 khung hình để giao diện luôn phản hồi mượt trước khi xử lý dữ liệu lớn
         await new Promise(resolve => requestAnimationFrame(resolve));
         if (loadSeq !== currentLoadSeq) return;
 
@@ -840,7 +1070,6 @@
         onEachFeature: onEachFeature
       }).addTo(map);
 
-      // Chỉ tự động căn khung nhìn ở lần nạp đầu tiên để chuyển đổi qua lại giữa các lớp mượt mà, không bị giật khung nhìn
       if (!hasInitialFit && entry.geojson.features && entry.geojson.features.length > 0) {
         try {
           const bounds = activeGeojsonLayer.getBounds();
@@ -936,26 +1165,30 @@
           }
         } catch (e) { }
       }
-      map.setView(QUY_NHON_DONG_CENTER, 12);
+      map.setView(QUY_NHON_DONG_CENTER, 13);
     }
 
-    function executeSearch(query) {
+    async function executeSearch(query) {
       if (!query || query.trim() === '') return;
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Quy Nhơn, Bình Định')}`)
-        .then(res => res.json())
-        .then(results => {
+      const q = query.trim();
+      const candidates = [`${q}, Quy Nhơn Đông, Gia Lai`, `${q}, Quy Nhơn, Gia Lai`, `${q}, Quy Nhơn`];
+      for (const searchText of candidates) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchText)}`);
+          const results = await res.json();
           if (results && results.length > 0) {
             const r = results[0];
             const lat = parseFloat(r.lat);
             const lon = parseFloat(r.lon);
-            map.flyTo([lat, lon], 14, { duration: 0.8 });
+            map.flyTo([lat, lon], 15, { duration: 0.8 });
             L.popup()
               .setLatLng([lat, lon])
               .setContent(`<div class="p-1 text-xs font-semibold text-slate-800">${r.display_name}</div>`)
               .openOn(map);
+            return;
           }
-        })
-        .catch(() => { });
+        } catch (e) { }
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
